@@ -11,7 +11,7 @@ import (
 
 func TestCreate(t *testing.T) {
 	var mockZonePath string
-	mockZonePath = "/home/oms101/home/nect_devops/dnslb/foo.yaml"
+	mockZonePath = "test_zone_config.yaml"
 	mockBuf, err := ioutil.ReadFile(mockZonePath)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
