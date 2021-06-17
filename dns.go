@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/OneOfOne/xxhash"
 )
@@ -203,6 +204,66 @@ func (z *Zone) RemoveRecordsWithName(name string) {
 		}
 	}
 
+	z.Records = recs
+}
+
+// RemoveRecordsWithCanonicalnameType removes records from the current zone.
+// which matches the passed canonical name, and type
+// If no types are given it matches all types.
+func (z *Zone) RemoveRecordsWithCanonicalnameType(
+	CanonicalDomainName string,
+	deleteTypes ...RecordType) {
+
+	znameSplit := strings.Split(z.Name, ".")
+	cnameSplit := strings.Split(CanonicalDomainName, ".")
+	if len(cnameSplit) < len(znameSplit) {
+		return
+	}
+	var backindex int
+	backindex = 1
+	for backindex <= len(znameSplit) {
+		// Compare last item from slice
+		zitem := znameSplit[len(znameSplit)-backindex]
+		citem := cnameSplit[len(cnameSplit)-backindex]
+		if zitem != citem {
+			return
+		}
+		backindex++
+	}
+	nameSplit := cnameSplit[:len(cnameSplit)-len(znameSplit)]
+	name := strings.Join(nameSplit[:], ".")
+	print(fmt.Sprintf("name=%v\n", name))
+	deleteRec := func(rec Record) bool {
+		if rec.Name != name {
+			return false
+		}
+		return true
+	}
+	if len(deleteTypes) > 0 {
+		deleteRec = func(rec Record) bool {
+			if rec.Name != name {
+				return false
+			}
+			notFound := true
+			for _, recType := range deleteTypes {
+				if rec.Type == recType {
+					notFound = false
+				}
+			}
+			if notFound {
+				return false
+			}
+			return true
+		}
+	}
+
+	recs := make([]Record, 0)
+	for _, rec := range z.Records {
+		if deleteRec(rec) {
+			continue
+		}
+		recs = append(recs, rec)
+	}
 	z.Records = recs
 }
 
