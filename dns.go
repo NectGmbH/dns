@@ -193,12 +193,12 @@ func (z *Zone) Equals(b *Zone) bool {
 	return z.Hash() == b.Hash()
 }
 
-// RemoveRecordsWithName removes all records from the current zone which matches the passed name
-func (z *Zone) RemoveRecordsWithName(name string) {
+// RemoveRecordsWithName removes all records from the current zone which matches the passed name, and type
+func (z *Zone) RemoveRecordsWithName(name string, deleteType RecordType) {
 	recs := make([]Record, 0)
 
 	for _, rec := range z.Records {
-		if rec.Name != name {
+		if rec.Name != name && rec.Type != deleteType {
 			recs = append(recs, rec)
 		}
 	}
